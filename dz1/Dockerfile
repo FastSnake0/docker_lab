@@ -1,21 +1,11 @@
-# Сборка Python из исходников
+# Сборка Python
 FROM alpine:3.19 as builder
 
 RUN apk add --no-cache \
     build-base \
-    openssl-dev \
-    bzip2-dev \
     zlib-dev \
-    xz-dev \
     libffi-dev \
-    wget \
-    readline-dev \
-    ncurses-dev \
-    libuuid \
-    sqlite-dev \
-    lzlib \
-    linux-headers \
-    make
+    wget
 
 WORKDIR /build
 
@@ -23,16 +13,18 @@ ENV PYTHON_VERSION=3.12.2
 RUN wget https://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERSION}.tgz && \
     tar -xzf Python-${PYTHON_VERSION}.tgz && \
     cd Python-${PYTHON_VERSION} && \
-    ./configure --prefix=/opt/python --enable-optimizations --with-lto && \
+    ./configure --prefix=/opt/python --disable-ipv6 --without-ensurepip && \
     make -j$(nproc) && \
-    make install
+    make install && \
+    cd / && \
+    rm -rf Python-${PYTHON_VERSION} Python-${PYTHON_VERSION}.tgz
 
-# Минимальный контейнер
+# Минимальный runtime (только нужные файлы)
 FROM scratch
 
 COPY --from=builder /opt/python /opt/python
-COPY --from=builder /lib /lib
-COPY --from=builder /usr/lib /usr/lib
+COPY --from=builder /lib/ld-musl-x86_64.so.1 /lib/
+COPY --from=builder /usr/lib/libffi.so.8 /usr/lib/
 
 COPY main.py /main.py
 

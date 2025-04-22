@@ -1,31 +1,26 @@
-# Сборка Python
-FROM alpine:3.19 as builder
+FROM python:3.12-slim as builder
 
-RUN apk add --no-cache \
-    build-base \
-    zlib-dev \
-    libffi-dev \
-    wget
+RUN mkdir -p /minimal/lib /minimal/lib64 /minimal/usr/local/lib /minimal/usr/local/bin
 
-WORKDIR /build
+# 1. Python бинарник
+RUN cp /usr/local/bin/python3.12 /minimal/python3
 
-ENV PYTHON_VERSION=3.12.2
-RUN wget https://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERSION}.tgz && \
-    tar -xzf Python-${PYTHON_VERSION}.tgz && \
-    cd Python-${PYTHON_VERSION} && \
-    ./configure --prefix=/opt/python --disable-ipv6 --without-ensurepip && \
-    make -j$(nproc) && \
-    make install && \
-    cd / && \
-    rm -rf Python-${PYTHON_VERSION} Python-${PYTHON_VERSION}.tgz
+# 2. Shared библиотеки Python
+RUN cp /usr/local/lib/libpython3.12.so.1.0 /minimal/lib/
 
-# Минимальный runtime (только нужные файлы)
+# 3. Стандартная библиотека Python
+RUN cp -r /usr/local/lib/python3.12 /minimal/usr/local/lib/python3.12
+
+# 4. C-библиотеки
+RUN cp /lib/x86_64-linux-gnu/libc.so.6 /minimal/lib/
+RUN cp /lib/x86_64-linux-gnu/libm.so.6 /minimal/lib/
+
+# 5. Dynamic linker
+RUN cp /lib64/ld-linux-x86-64.so.2 /minimal/lib64/
+
+COPY main.py /minimal/main.py
+
 FROM scratch
+COPY --from=builder /minimal/ /
 
-COPY --from=builder /opt/python /opt/python
-COPY --from=builder /lib/ld-musl-x86_64.so.1 /lib/
-COPY --from=builder /usr/lib/libffi.so.8 /usr/lib/
-
-COPY main.py /main.py
-
-ENTRYPOINT ["/opt/python/bin/python3", "/main.py"]
+ENTRYPOINT ["/python3", "/main.py"]

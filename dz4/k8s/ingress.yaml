@@ -1,0 +1,24 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: backend-ingress
+  annotations:
+    kubernetes.io/ingress.class: "traefik"  # убедись, что это установлено
+    traefik.ingress.kubernetes.io/router.entrypoints: "web"
+    traefik.ingress.kubernetes.io/cors-allow-origin: "*"
+    traefik.ingress.kubernetes.io/cors-allow-methods: "GET, POST, OPTIONS"
+    traefik.ingress.kubernetes.io/cors-allow-headers: "*"
+    traefik.ingress.kubernetes.io/cors-allow-credentials: "true"
+    traefik.ingress.kubernetes.io/cors-max-age: "86400"
+spec:
+  rules:
+    - host: localhost
+      http:
+        paths:
+          - path: /count
+            pathType: Prefix
+            backend:
+              service:
+                name: backend-service
+                port:
+                  number: 5000

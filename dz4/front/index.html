@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Word Counter</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #f7f9fc;
+      max-width: 800px;
+      margin: 50px auto;
+      padding: 20px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      border-radius: 12px;
+    }
+    textarea {
+      width: 100%;
+      height: 150px;
+      padding: 10px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      resize: vertical;
+    }
+    button {
+      margin-top: 10px;
+      padding: 10px 20px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: none;
+      background: #4a90e2;
+      color: white;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #357abd;
+    }
+    pre {
+      margin-top: 20px;
+      background: #f0f0f0;
+      padding: 10px;
+      border-radius: 8px;
+      overflow-x: auto;
+    }
+  </style>
+</head>
+<body>
+  <h1>🔠 Подсчёт Частоты Слов</h1>
+  <textarea id="input" placeholder="Введите текст для анализа..."></textarea><br>
+  <button onclick="submitText()">📊 Подсчитать</button>
+  <pre id="output">Здесь появится результат...</pre>
+
+  <script>
+    async function submitText() {
+    const text = document.getElementById('input').value;
+    try {
+        const response = await fetch('http://backend-service:5000/count', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text })
+            });
+        const result = await response.json();
+    
+    // Преобразуем объект в строку вида "слово1": 2, "слово2": 1, ...
+        const formattedResult = Object.entries(result)
+            .map(([word, count]) => `"${word}": ${count}`)
+            .join(', ');
+    
+        document.getElementById('output').textContent = formattedResult;
+        }  
+        catch (err) {
+            document.getElementById('output').textContent = "Ошибка запроса: " + err;
+        }
+}
+  </script>
+</body>
+</html>

@@ -1,9 +1,23 @@
 # ДЗ 4
 
-Задание - создание docker-compose (многоступенчатая сборка)
+Задание 4 - создание деплоя для сервися
 
-Сборка и запуск контейнера: `docker-compose up --build`
+1. Создание кластера
 
-Проверка работы: Фронтенд: `http://localhost:8080` Бэкенд: `http://localhost:5000` (POST метод `/count`)
+    `k3d cluster create my-cluster --port "30001:30001@loadbalancer"`
 
-Размер контейнера backend 208MB -> 84.5MB
+2. Импорт образов в кластер
+
+    `k3d image import dz4-frontend:latest -c test-cluster`
+    `k3d image import dz4-backend:latest -c test-cluster`
+3. Манифесты
+    `kubectl apply -f k8s/`
+
+4. Перезапуск
+
+    `kubectl rollout restart deployment backend`
+    `kubectl rollout restart deployment frontend`
+
+Задание 5 - создание ингресса
+
+Добавил `ingress.yaml` и обновил конфиги `kubectl apply -f k8s/`

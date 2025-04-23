@@ -12,14 +12,6 @@
 
 [🔴](dz3/README.md)
 
-## ДЗ 4
-
-[🔴](dz4/README.md)
-
-## ДЗ 5
-
-[🔴](dz4/README.md)
-
-## ДЗ 6
+## ДЗ 4 и 5
 
 [🔴](dz4/README.md)
